@@ -40,6 +40,6 @@ def moderate_handler(s):
     response_model=str,
     responses={503: {"model": OverloadError}, 406: {"model": ProfanityError}},
 )
-def campaign_stream(prompt: str = Query(None, max_length=20)):
+def campaign_stream(prompt: str = Query(..., max_length=20)):
     if moderate_handler(prompt):
         return StreamingResponse(get_streaming_response_openai(prompt), media_type="text/event-stream")
