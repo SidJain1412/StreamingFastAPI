@@ -1,5 +1,5 @@
-from fastapi import FastAPI, Response, HTTPException, Request, Header, Response
-from fastapi.responses import StreamingResponse, PlainTextResponse
+from fastapi import FastAPI, HTTPException, Query
+from fastapi.responses import StreamingResponse
 import config
 from helper import *
 import time
@@ -40,6 +40,6 @@ def moderate_handler(s):
     response_model=str,
     responses={503: {"model": OverloadError}, 406: {"model": ProfanityError}},
 )
-def campaign_stream(prompt: str):
+def campaign_stream(prompt: str = Query(None, max_length=20)):
     if moderate_handler(prompt):
         return StreamingResponse(get_streaming_response_openai(prompt), media_type="text/event-stream")
