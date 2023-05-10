@@ -28,7 +28,10 @@ def get_streaming_response_openai(prompt):
             top_p=1,
             frequency_penalty=0,
             presence_penalty=0,
-            messages=[{"role": "user", "content": prompt}],
+            messages=[
+                {"role": "system", "content": "You are an expert creative marketer. Create a campaign for the brand the user enters."},
+                {"role": "user", "content": prompt},
+            ],
             stream=True,
         )
     except Exception as e:
@@ -36,7 +39,7 @@ def get_streaming_response_openai(prompt):
         return 503
     try:
         for chunk in response:
-            current_content = chunk["choices"][0]["delta"].get("content", "").replace("\n", "").replace('"', "")
+            current_content = chunk["choices"][0]["delta"].get("content", "")
             yield current_content
     except Exception as e:
         print("OpenAI Response (Streaming) Error: " + str(e))
