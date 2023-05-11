@@ -2,7 +2,6 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import StreamingResponse
 import config
 from helper import *
-import time
 
 app = FastAPI(
     title="Streaming API",
