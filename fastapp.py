@@ -18,37 +18,6 @@ This doc does not support streaming outputs, but curl does.
 )
 
 
-def moderate_text(sent):
-    # If against policy, return True
-    try:
-        response = openai.Moderation.create(sent)
-        return response["results"][0]["flagged"]
-
-    except Exception as e:
-        print("Moderate Text Error: " + str(e))
-        return 500
-
-
-def moderate_handler(s):
-    """
-    If no issue, returns True
-    If goes against policy, raise 406 error
-    If some internal error, raise 500 error
-    """
-    ContentPolicyBreach = moderate_text(s)
-
-    if ContentPolicyBreach == 500:
-        # Error from OpenAI side, so assuming no policy breach
-        return True
-        # raise HTTPException(status_code=503, detail=config.error503)
-        # return False
-    elif ContentPolicyBreach:
-        result = config.profanityError
-        raise HTTPException(status_code=406, detail=result)
-
-    return True
-
-
 def get_streaming_response_openai(prompt):
     try:
         prompt = prompt
@@ -85,5 +54,4 @@ def get_streaming_response_openai(prompt):
     responses={503: {"model": OverloadError}, 406: {"model": ProfanityError}},
 )
 def campaign_stream(prompt: str = Query(..., max_length=20)):
-    if moderate_handler(prompt):
-        return StreamingResponse(get_streaming_response_openai(prompt), media_type="text/event-stream")
+    return StreamingResponse(get_streaming_response_openai(prompt), media_type="text/event-stream")
