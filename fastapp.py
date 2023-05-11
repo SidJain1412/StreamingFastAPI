@@ -1,9 +1,8 @@
 from fastapi import FastAPI, HTTPException, Query
-from helper import *
 import openai
 import os
 import sys
-
+from pydantic import BaseModel, Field
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 if not len(OPENAI_API_KEY):
@@ -25,6 +24,13 @@ This doc does not support streaming outputs, but curl does.
               """,
     version=1.0,
 )
+
+
+error503 = "OpenAI server is busy, try again later"
+
+
+class OverloadError(BaseModel):
+    detail: str = Field(default=error503)
 
 
 def get_response_openai(prompt):
