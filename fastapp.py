@@ -2,6 +2,11 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import StreamingResponse
 import config
 from helper import *
+import openai
+import config
+
+
+openai.api_key = config.OPENAI_API_KEY
 
 app = FastAPI(
     title="Streaming API",
@@ -11,6 +16,17 @@ This doc does not support streaming outputs, but curl does.
               """,
     version=1.0,
 )
+
+
+def moderate_text(sent):
+    # If against policy, return True
+    try:
+        response = openai.Moderation.create(sent)
+        return response["results"][0]["flagged"]
+
+    except Exception as e:
+        print("Moderate Text Error: " + str(e))
+        return 500
 
 
 def moderate_handler(s):
@@ -31,6 +47,35 @@ def moderate_handler(s):
         raise HTTPException(status_code=406, detail=result)
 
     return True
+
+
+def get_streaming_response_openai(prompt):
+    try:
+        prompt = prompt
+        response = openai.ChatCompletion.create(
+            model=config.openai_model,
+            temperature=config.temperature,
+            max_tokens=config.max_tokens,
+            n=config.max_responses,
+            top_p=1,
+            frequency_penalty=0,
+            presence_penalty=0,
+            messages=[
+                {"role": "system", "content": "You are an expert creative marketer. Create a campaign for the brand the user enters."},
+                {"role": "user", "content": prompt},
+            ],
+            stream=True,
+        )
+    except Exception as e:
+        print("Error in creating campaigns from openAI:", str(e))
+        return 503
+    try:
+        for chunk in response:
+            current_content = chunk["choices"][0]["delta"].get("content", "")
+            yield current_content
+    except Exception as e:
+        print("OpenAI Response (Streaming) Error: " + str(e))
+        return 503
 
 
 @app.get(
