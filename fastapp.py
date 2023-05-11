@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException, Query
+from fastapi.responses import StreamingResponse
 import openai
 import os
 import sys
@@ -52,11 +53,18 @@ def get_response_openai(prompt):
                 {"role": "system", "content": "You are an expert creative marketer. Create a campaign for the brand the user enters."},
                 {"role": "user", "content": prompt},
             ],
+            stream=True,
         )
     except Exception as e:
         print("Error in creating campaigns from openAI:", str(e))
         return 503
-    return response["choices"][0]["message"]["content"]
+    try:
+        for chunk in response:
+            current_content = chunk["choices"][0]["delta"].get("content", "")
+            yield current_content
+    except Exception as e:
+        print("OpenAI Response (Streaming) Error: " + str(e))
+        return 503
 
 
 @app.get(
@@ -66,4 +74,4 @@ def get_response_openai(prompt):
     responses={503: {"model": OverloadError}},
 )
 def campaign(prompt: str = Query(..., max_length=20)):
-    return get_response_openai(prompt)
+    return StreamingResponse(get_response_openai(prompt), media_type="text/event-stream")
