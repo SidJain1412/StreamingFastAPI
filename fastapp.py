@@ -1,5 +1,4 @@
 from fastapi import FastAPI, HTTPException, Query
-from fastapi.responses import StreamingResponse
 import config
 from helper import *
 import openai
@@ -18,7 +17,7 @@ This doc does not support streaming outputs, but curl does.
 )
 
 
-def get_streaming_response_openai(prompt):
+def get_response_openai(prompt):
     try:
         prompt = prompt
         response = openai.ChatCompletion.create(
@@ -33,25 +32,18 @@ def get_streaming_response_openai(prompt):
                 {"role": "system", "content": "You are an expert creative marketer. Create a campaign for the brand the user enters."},
                 {"role": "user", "content": prompt},
             ],
-            stream=True,
         )
     except Exception as e:
         print("Error in creating campaigns from openAI:", str(e))
         return 503
-    try:
-        for chunk in response:
-            current_content = chunk["choices"][0]["delta"].get("content", "")
-            yield current_content
-    except Exception as e:
-        print("OpenAI Response (Streaming) Error: " + str(e))
-        return 503
+    return response["choices"][0]["message"]["content"]
 
 
 @app.get(
-    "/campaign_stream/",
+    "/campaign/",
     tags=["APIs"],
     response_model=str,
     responses={503: {"model": OverloadError}, 406: {"model": ProfanityError}},
 )
-def campaign_stream(prompt: str = Query(..., max_length=20)):
-    return StreamingResponse(get_streaming_response_openai(prompt), media_type="text/event-stream")
+def campaign(prompt: str = Query(..., max_length=20)):
+    return get_response_openai(prompt)
