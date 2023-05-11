@@ -3,7 +3,6 @@ from fastapi.responses import StreamingResponse
 import openai
 import os
 import sys
-from pydantic import BaseModel, Field
 
 # Getting OpenAI API Key
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
@@ -33,11 +32,6 @@ This doc does not support streaming outputs, but curl does.
 error503 = "OpenAI server is busy, try again later"
 
 
-# Pydantic class for 503 error
-class OverloadError(BaseModel):
-    detail: str = Field(default=error503)
-
-
 def get_response_openai(prompt):
     try:
         prompt = prompt
@@ -57,21 +51,21 @@ def get_response_openai(prompt):
         )
     except Exception as e:
         print("Error in creating campaigns from openAI:", str(e))
-        return 503
+        raise HTTPException(503, error503)
     try:
         for chunk in response:
             current_content = chunk["choices"][0]["delta"].get("content", "")
             yield current_content
     except Exception as e:
         print("OpenAI Response (Streaming) Error: " + str(e))
-        return 503
+        raise HTTPException(503, error503)
 
 
 @app.get(
     "/campaign/",
     tags=["APIs"],
     response_model=str,
-    responses={503: {"model": OverloadError}},
+    responses={503: {"detail": error503}},
 )
 def campaign(prompt: str = Query(..., max_length=20)):
     return StreamingResponse(get_response_openai(prompt), media_type="text/event-stream")
