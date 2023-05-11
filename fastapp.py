@@ -3,7 +3,19 @@ import config
 from helper import *
 import openai
 import config
+import os
+import sys
 
+
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+if not len(OPENAI_API_KEY):
+    print("Please set OPENAI_API_KEY environment variable. Exiting.")
+    sys.exit(1)
+
+openai_model = "gpt-3.5-turbo"
+max_responses = 1
+temperature = 0.7
+max_tokens = 512
 
 openai.api_key = config.OPENAI_API_KEY
 
@@ -21,10 +33,10 @@ def get_response_openai(prompt):
     try:
         prompt = prompt
         response = openai.ChatCompletion.create(
-            model=config.openai_model,
-            temperature=config.temperature,
-            max_tokens=config.max_tokens,
-            n=config.max_responses,
+            model=openai_model,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            n=max_responses,
             top_p=1,
             frequency_penalty=0,
             presence_penalty=0,
@@ -43,7 +55,7 @@ def get_response_openai(prompt):
     "/campaign/",
     tags=["APIs"],
     response_model=str,
-    responses={503: {"model": OverloadError}, 406: {"model": ProfanityError}},
+    responses={503: {"model": OverloadError}},
 )
 def campaign(prompt: str = Query(..., max_length=20)):
     return get_response_openai(prompt)

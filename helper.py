@@ -1,10 +1,7 @@
 from pydantic import BaseModel, Field
-import config
+
+error503 = "OpenAI server is busy, try again later"
 
 
 class OverloadError(BaseModel):
-    detail: str = Field(default=config.error503)
-
-
-class ProfanityError(BaseModel):
-    detail: str = Field(default=config.profanityError)
+    detail: str = Field(default=error503)
