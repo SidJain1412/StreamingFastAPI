@@ -1,8 +1,6 @@
 from fastapi import FastAPI, HTTPException, Query
-import config
 from helper import *
 import openai
-import config
 import os
 import sys
 
@@ -17,7 +15,7 @@ max_responses = 1
 temperature = 0.7
 max_tokens = 512
 
-openai.api_key = config.OPENAI_API_KEY
+openai.api_key = OPENAI_API_KEY
 
 app = FastAPI(
     title="Streaming API",
