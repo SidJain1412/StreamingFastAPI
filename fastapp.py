@@ -4,18 +4,21 @@ import os
 import sys
 from pydantic import BaseModel, Field
 
+# Getting OpenAI API Key
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 if not len(OPENAI_API_KEY):
     print("Please set OPENAI_API_KEY environment variable. Exiting.")
     sys.exit(1)
 
+openai.api_key = OPENAI_API_KEY
+
+# Parameters for OpenAI
 openai_model = "gpt-3.5-turbo"
 max_responses = 1
 temperature = 0.7
 max_tokens = 512
 
-openai.api_key = OPENAI_API_KEY
-
+# Defining the FastAPI app and metadata
 app = FastAPI(
     title="Streaming API",
     description="""### API specifications\n
@@ -25,10 +28,11 @@ This doc does not support streaming outputs, but curl does.
     version=1.0,
 )
 
-
+# Defining error in case of 503 from OpenAI
 error503 = "OpenAI server is busy, try again later"
 
 
+# Pydantic class for 503 error
 class OverloadError(BaseModel):
     detail: str = Field(default=error503)
 
