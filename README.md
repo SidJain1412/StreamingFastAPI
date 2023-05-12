@@ -1,8 +1,8 @@
 # StreamingFastAPI
+
+## Read the blog [here](https://tech.clevertap.com/streaming-openai-app-in-python/)
+
 FastAPI app that uses OpenAI APIs to stream responses
-
-## Read the blog [here](https://tech.clevertap.com/streaming-openai-app-in-python/)**
-
 
 Set OPENAI_API_KEY environment variable using `export OPENAI_API_KEY=<your_api_key>`
 
