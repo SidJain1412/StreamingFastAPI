@@ -22,7 +22,7 @@ max_tokens = 512
 app = FastAPI(
     title="Streaming API",
     description="""### API specifications\n
-To test out the Streaming API `campaign_stream`, fire a sample query, then use the Curl command in your terminal to see it stream in real time\n
+To test out the Streaming API `campaign`, fire a sample query, then use the Curl command in your terminal to see it stream in real time\n
 This doc does not support streaming outputs, but curl does.
               """,
     version=1.0,
