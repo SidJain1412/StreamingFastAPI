@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, Query, HTTPException
 from fastapi.responses import StreamingResponse
 import openai
 import os
@@ -28,6 +28,9 @@ This doc does not support streaming outputs, but curl does.
     version=1.0,
 )
 
+# Defining error in case of 503 from OpenAI
+error503 = "OpenAI server is busy, try again later"
+
 
 def get_response_openai(prompt):
     try:
@@ -47,19 +50,22 @@ def get_response_openai(prompt):
             stream=True,
         )
     except Exception as e:
-        pass
+        print("Error in creating campaigns from openAI:", str(e))
+        raise HTTPException(503, error503)
     try:
         for chunk in response:
             current_content = chunk["choices"][0]["delta"].get("content", "")
             yield current_content
     except Exception as e:
-        pass
+        print("OpenAI Response (Streaming) Error: " + str(e))
+        raise HTTPException(503, error503)
 
 
 @app.get(
     "/campaign/",
     tags=["APIs"],
     response_model=str,
+    responses={503: {"detail": error503}},
 )
 def campaign(prompt: str = Query(..., max_length=20)):
     return StreamingResponse(get_response_openai(prompt), media_type="text/event-stream")
