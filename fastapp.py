@@ -68,4 +68,7 @@ def get_response_openai(prompt):
     responses={503: {"detail": error503}},
 )
 def campaign(prompt: str = Query(..., max_length=20)):
+    """
+    Create a marketing campaign plan for the brand name entered in the prompt
+    """
     return StreamingResponse(get_response_openai(prompt), media_type="text/event-stream")
